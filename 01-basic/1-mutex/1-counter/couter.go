@@ -8,11 +8,13 @@ import (
 const routineNum = 10
 const incNum = 100000
 
+type Counter struct {
+	sync.Mutex
+	Count uint64
+}
+
 func main() {
-	//互斥锁保护计数器
-	var mutex sync.Mutex
-	var count = 0
-	//使用WaitGroup等待10个goroutine完成
+	var counter Counter
 	var wg sync.WaitGroup
 	wg.Add(routineNum)
 
@@ -21,13 +23,12 @@ func main() {
 			defer wg.Done()
 
 			for j := 0; j < incNum; j++ {
-				mutex.Lock()
-				count++
-				mutex.Unlock()
+				counter.Lock()
+				counter.Count++
+				counter.Unlock()
 			}
 		}()
 	}
-	//主协程等待10个goroutine完成
 	wg.Wait()
-	fmt.Println(count)
+	fmt.Println(counter.Count)
 }
