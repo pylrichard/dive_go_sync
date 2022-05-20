@@ -9,8 +9,24 @@ const routineNum = 10
 const incNum = 100000
 
 type Counter struct {
-	sync.Mutex
-	Count uint64
+	Type int
+	Name string
+
+	mutex sync.Mutex
+	count uint64
+}
+
+func (c *Counter) Incr() {
+	c.mutex.Lock()
+	c.count++
+	c.mutex.Unlock()
+}
+
+func (c *Counter) Count() uint64 {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	return c.count
 }
 
 func main() {
@@ -23,12 +39,10 @@ func main() {
 			defer wg.Done()
 
 			for j := 0; j < incNum; j++ {
-				counter.Lock()
-				counter.Count++
-				counter.Unlock()
+				counter.Incr()
 			}
 		}()
 	}
 	wg.Wait()
-	fmt.Println(counter.Count)
+	fmt.Println(counter.Count())
 }
